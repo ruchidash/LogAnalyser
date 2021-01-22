@@ -1,9 +1,9 @@
 package com.creditsuisse.exception;
 
-public class InvalidLocationException extends Exception {
+public class DuplicateInsertException extends Exception {
 	private static final long serialVersionUID = 1L;
 
-	public InvalidLocationException(String message) {
+	public DuplicateInsertException(String message) {
 		super(message);
 	}
 

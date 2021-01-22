@@ -1,33 +1,30 @@
 package com.creditsuisse.dao;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
-
-import javax.naming.ldap.StartTlsRequest;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.creditsuisse.dao.util.DBPropertiesUtil;
 import com.creditsuisse.entity.Log;
 import com.creditsuisse.entity.State;
 import com.creditsuisse.exception.ConnectionException;
+import com.creditsuisse.exception.DuplicateInsertException;
+import com.creditsuisse.util.ConnectionUtil;
+import com.creditsuisse.util.PropertiesUtil;
 
 public class LogDao {
 	private static final Logger log = LogManager.getLogger(LogDao.class);
 
 	private static final String TABLE_NAME = "EVENT";
-	private static final BigDecimal DURATION_THRESHOLD = new BigDecimal(4); // TODO Move to prop file
+	private static final int DURATION_THRESHOLD = PropertiesUtil.getEventAlertThresold(); // TODO Move to prop file
 
 	public static void initialize() throws ConnectionException, SQLException {
 
-		Connection con = DBPropertiesUtil.getConnection();
+		Connection con = ConnectionUtil.getConnection();
 		DatabaseMetaData dbm = con.getMetaData();
 
 		ResultSet tables = dbm.getTables(null, null, TABLE_NAME, null);
@@ -39,28 +36,27 @@ public class LogDao {
 	}
 
 	public static int update(Log log) throws ConnectionException, SQLException {
-		Connection con = DBPropertiesUtil.getConnection();
+		Connection con = ConnectionUtil.getConnection();
 		Statement stmt = con.createStatement();
 		int updateCount = 0;
 		ResultSet result = stmt
 				.executeQuery("select starttime, endtime from " + TABLE_NAME + " where id='" + log.getId() + "';");
 		result.next();
 
-		BigDecimal duration = new BigDecimal(0);
-		BigDecimal startTime = null;
-		BigDecimal endTime = null;
+		long duration = 0;
+		long startTime = 0;
+		long endTime = 0;
 
 		if (log.getState() == State.FINISHED) {
-			startTime = result.getBigDecimal("starttime");
+			startTime = result.getLong("starttime");
 			endTime = log.getTimestamp();
-			duration = endTime.subtract(startTime);
+
 		} else if (log.getState() == State.STARTED) {
 			startTime = log.getTimestamp();
-			endTime = result.getBigDecimal("endtime");
-			duration = endTime.subtract(startTime);
+			endTime = result.getLong("endtime");
 		}
-
-		boolean alert = (duration.compareTo(DURATION_THRESHOLD) > 0) ? true : false;
+		duration = endTime - startTime;
+		boolean alert = (duration >= DURATION_THRESHOLD) ? true : false;
 		String query = "UPDATE " + TABLE_NAME + " SET starttime = " + startTime + ", endtime=" + endTime + ", duration="
 				+ duration + ", alert=" + alert + " where id='" + log.getId() + "';";
 		updateCount = stmt.executeUpdate(query);
@@ -69,26 +65,30 @@ public class LogDao {
 		return updateCount;
 	}
 
-	public static void insert(Log log) throws ConnectionException, SQLException {
-		Connection con = DBPropertiesUtil.getConnection();
+	public static void insert(Log logEntry) throws ConnectionException, SQLException, DuplicateInsertException {
+		Connection con = ConnectionUtil.getConnection();
 		Statement stmt = con.createStatement();
 
-		BigDecimal startTime = null;
-		BigDecimal endTime = null;
-		if (log.getState() == State.FINISHED) {
-			endTime = log.getTimestamp();
-		} else if (log.getState() == State.STARTED) {
-			startTime = log.getTimestamp();
+		long startTime = 0;
+		long endTime = 0;
+		if (logEntry.getState() == State.FINISHED) {
+			endTime = logEntry.getTimestamp();
+		} else if (logEntry.getState() == State.STARTED) {
+			startTime = logEntry.getTimestamp();
 		}
 
-		String query = "INSERT INTO " + TABLE_NAME + " VALUES ('" + log.getId() + "'," + startTime + "," + endTime
-				+ ",'" + log.getHost() + "','" + log.getType() + "', " + null + "," + false + ");";
-		stmt.executeUpdate(query);
-		con.commit();
+		String query = "INSERT INTO " + TABLE_NAME + " VALUES ('" + logEntry.getId() + "'," + startTime + "," + endTime
+				+ ",'" + logEntry.getHost() + "','" + logEntry.getType() + "', " + null + "," + false + ");";
+		try {
+			stmt.executeUpdate(query);
+			con.commit();
+		} catch (SQLIntegrityConstraintViolationException e) {
+			throw new DuplicateInsertException("Record with id " + logEntry.getId() + " already exist.");
+		}
 	}
 
 	public static void createTable() throws ConnectionException, SQLException {
-		Connection con = DBPropertiesUtil.getConnection();
+		Connection con = ConnectionUtil.getConnection();
 		Statement stmt = con.createStatement();
 
 		String query = "CREATE TABLE " + TABLE_NAME
@@ -98,7 +98,7 @@ public class LogDao {
 	}
 
 	public static void dumpData() throws ConnectionException, SQLException {
-		Connection con = DBPropertiesUtil.getConnection();
+		Connection con = ConnectionUtil.getConnection();
 		Statement stmt = con.createStatement();
 
 		ResultSet result = stmt.executeQuery("select * from " + TABLE_NAME + ";");
@@ -110,7 +110,7 @@ public class LogDao {
 	}
 
 	public static void dropTable() throws ConnectionException, SQLException {
-		Connection con = DBPropertiesUtil.getConnection();
+		Connection con = ConnectionUtil.getConnection();
 		Statement stmt = con.createStatement();
 
 		String query = "DROP TABLE " + TABLE_NAME + ";";

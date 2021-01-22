@@ -1,7 +1,5 @@
 package com.creditsuisse.entity;
 
-import java.math.BigDecimal;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -14,7 +12,7 @@ public class Log {
 	private State state; // test with invalid state as input
 
 	@JsonProperty("timestamp")
-	private BigDecimal timestamp;
+	private long timestamp;
 
 	@JsonProperty("type")
 	private String type;
@@ -25,7 +23,7 @@ public class Log {
 	public Log() {
 	}
 
-	public Log(String id, State state, BigDecimal timestamp, String type, String host) {
+	public Log(String id, State state, long timestamp, String type, String host) {
 		super();
 		this.id = id;
 		this.state = state;
@@ -50,11 +48,11 @@ public class Log {
 		this.state = state;
 	}
 
-	public BigDecimal getTimestamp() {
+	public long getTimestamp() {
 		return timestamp;
 	}
 
-	public void setTimestamp(BigDecimal timestamp) {
+	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
 
