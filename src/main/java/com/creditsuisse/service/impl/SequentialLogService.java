@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class SequentialLogService implements LogService {
 	private static Logger log = LogManager.getLogger(SequentialLogService.class);
 
-	public void processLogEvent(String filePath) {
+	public void processLogFile(String filePath) {
 
 		try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
 			LogDao.dropTable(); // TODO for debugging purpose

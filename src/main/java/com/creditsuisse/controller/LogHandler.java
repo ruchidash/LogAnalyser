@@ -22,6 +22,6 @@ public class LogHandler {
 		String executionMode = PropertiesUtil.getExecutionMode();
 		LogService logService = LogServiceFactory.getLogService(executionMode);
 
-		logService.processLogEvent(filePath);
+		logService.processLogFile(filePath);
 	}
 }

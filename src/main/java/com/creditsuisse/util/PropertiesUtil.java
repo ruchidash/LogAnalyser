@@ -74,4 +74,12 @@ public class PropertiesUtil {
 	public static String getExecutionMode() {
 		return getProperties().getProperty("execution_mode");
 	}
+	
+	public static int getThreadPoolSize() {
+		return Integer.parseInt(getProperties().getProperty("thread_pool_size"));
+	}
+	
+	public static int getBatchLogSize() {
+		return Integer.parseInt(getProperties().getProperty("batch_log_size"));
+	}
 }
