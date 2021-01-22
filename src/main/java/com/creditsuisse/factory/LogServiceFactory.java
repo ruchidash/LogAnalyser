@@ -15,6 +15,6 @@ public class LogServiceFactory {
 			map.put("sequential", new SequentialLogService());
 		}
 
-		return map.get(executionMode);
+		return map.get(executionMode.toLowerCase());
 	}
 }

@@ -46,10 +46,6 @@ public class PropertiesUtil {
 		return propType;
 	}
 
-	public static String getLogSizeThresold() throws ConnectionException {
-		return getProperties().getProperty("log_size_threshold");
-	}
-
 	public static int getEventAlertThresold() {
 		return Integer.parseInt(getProperties().getProperty("event_alert_thresold"));
 

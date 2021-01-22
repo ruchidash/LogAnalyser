@@ -5,13 +5,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.stream.Stream;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import com.creditsuisse.dao.LogDao;
 import com.creditsuisse.entity.Log;
 import com.creditsuisse.exception.ConnectionException;
-import com.creditsuisse.exception.DuplicateInsertException;
 import com.creditsuisse.service.LogService;
+import com.creditsuisse.util.LogUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -29,7 +31,7 @@ public class SequentialLogService implements LogService {
 				Log logEntry;
 				try {
 					logEntry = mapper.readValue(line, Log.class);
-					saveEvent(logEntry);
+					LogUtil.saveEvent(logEntry);
 				} catch (JsonProcessingException e) {
 					log.error(e.getMessage());
 				}
@@ -43,27 +45,6 @@ public class SequentialLogService implements LogService {
 		} catch (SQLException e1) {
 			log.error(e1.getMessage());
 		}
-	}
-
-	private static Log saveEvent(Log logEntry) {
-
-		try {
-			LogDao.insert(logEntry);
-		} catch (ConnectionException e) {
-			log.error(e.getMessage());
-		} catch (DuplicateInsertException e) {
-			try {
-				LogDao.update(logEntry);
-			} catch (ConnectionException e1) {
-				log.error(e.getMessage());
-			} catch (SQLException e1) {
-				log.error(e.getMessage());
-			}
-		} catch (SQLException e) {
-			log.error(e.getMessage());
-		}
-
-		return logEntry;
 	}
 
 }

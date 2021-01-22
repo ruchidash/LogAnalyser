@@ -20,7 +20,7 @@ public class LogDao {
 	private static final Logger log = LogManager.getLogger(LogDao.class);
 
 	private static final String TABLE_NAME = "EVENT";
-	private static final int DURATION_THRESHOLD = PropertiesUtil.getEventAlertThresold(); // TODO Move to prop file
+	private static final int DURATION_THRESHOLD = PropertiesUtil.getEventAlertThresold();
 
 	public static void initialize() throws ConnectionException, SQLException {
 
@@ -76,9 +76,8 @@ public class LogDao {
 		} else if (logEntry.getState() == State.STARTED) {
 			startTime = logEntry.getTimestamp();
 		}
-
 		String query = "INSERT INTO " + TABLE_NAME + " VALUES ('" + logEntry.getId() + "'," + startTime + "," + endTime
-				+ ",'" + logEntry.getHost() + "','" + logEntry.getType() + "', " + null + "," + false + ");";
+				+ ",'" + logEntry.getHost() + "','" + logEntry.getType() + "', " + 0l + "," + false + ");";
 		try {
 			stmt.executeUpdate(query);
 			con.commit();

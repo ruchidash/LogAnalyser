@@ -9,7 +9,7 @@ public class Log {
 	private String id;
 
 	@JsonProperty("state")
-	private State state; // test with invalid state as input
+	private State state;
 
 	@JsonProperty("timestamp")
 	private long timestamp;
@@ -28,8 +28,8 @@ public class Log {
 		this.id = id;
 		this.state = state;
 		this.timestamp = timestamp;
-		this.type = type;
-		this.host = host;
+		this.type = type == null ? "" : type;
+		this.host = host == null ? "" : host;
 	}
 
 	public String getId() {
@@ -61,6 +61,8 @@ public class Log {
 	}
 
 	public void setType(String type) {
+		if (type == null)
+			this.type = "";
 		this.type = type;
 	}
 
@@ -69,6 +71,8 @@ public class Log {
 	}
 
 	public void setHost(String host) {
+		if (host == null)
+			this.host = "";
 		this.host = host;
 	}
 
