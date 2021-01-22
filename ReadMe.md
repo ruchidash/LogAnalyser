@@ -19,7 +19,7 @@
 
 ### Run
 ```
-./mvnw exec:java -DPROPERTY_TYPE=prod
+./mvnw exec:java -Dexec.args="./src/main/resources/input/logfile.txt"
 ```
 
 - To pick a particular configuration (test/prod) you can pass as JVM system property or set environment variable
